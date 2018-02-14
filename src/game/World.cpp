@@ -269,8 +269,6 @@ void World::AddSession_(WorldSession* s)
                 decrease_session = false;
             if (!old->second->ForcePlayerLogoutDelay())
                 delete old->second;
-
-            m_sessions.erase(old);
         }
     }
 
