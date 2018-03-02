@@ -1145,6 +1145,9 @@ void World::SetInitialWorldSettings()
         exit(1);                                            // Error message displayed in function already
     }
 
+    // Loads existing IDs in the database.
+    sObjectMgr.LoadAllIdentifiers();
+
     sLog.outString("Loading Instance Statistics...");
     sInstanceStatistics.LoadFromDB();
 
@@ -1170,7 +1173,14 @@ void World::SetInitialWorldSettings()
         CharacterDatabase.PExecute("DELETE FROM corpse WHERE corpse_type = '0' OR time < (UNIX_TIMESTAMP()-'%u')", 3 * DAY);
     }
 
+    sLog.outString();
     sSpellMgr.LoadSpells();
+
+    sLog.outString();
+    sObjectMgr.LoadFactions();
+
+    sLog.outString();
+    sObjectMgr.LoadSoundEntries();
 
     ///- Load the DBC files
     sLog.outString("Initialize data stores...");
@@ -1541,9 +1551,6 @@ void World::SetInitialWorldSettings()
     sLog.outString("Checking all script texts...");         // must be after Load*Scripts calls
     sScriptMgr.CheckAllScriptTexts();
 
-    sLog.outString("Loading CreatureEventAI Texts...");
-    sEventAIMgr.LoadCreatureEventAI_Texts(false);           // false, will checked in LoadCreatureEventAI_Scripts
-
     sLog.outString("Loading CreatureEventAI Summons...");
     sEventAIMgr.LoadCreatureEventAI_Summons(false);         // false, will checked in LoadCreatureEventAI_Scripts
 
@@ -1619,10 +1626,6 @@ void World::SetInitialWorldSettings()
     sLog.outString("Starting Game Event system...");
     uint32 nextGameEvent = sGameEventMgr.Initialize();
     m_timers[WUPDATE_EVENTS].SetInterval(nextGameEvent);    //depend on next event
-
-    // === Nostalrius ===
-    sLog.outString("Loading Nostalrius texts (nostalrius_string)");
-    sObjectMgr.LoadNostalriusStrings();
 
     sLog.outString("Loading disabled spells");
     sObjectMgr.LoadSpellDisabledEntrys();
