@@ -10,11 +10,9 @@
 
 cmake_minimum_required (VERSION 2.6)
 
-message ("Mmap extractor included")
-
 project( MoveMapGen )
 
-ADD_DEFINITIONS(-DMMAP_GENERATOR -DNO_CORE_FUNCS -DDEBUG)
+ADD_DEFINITIONS(-DMMAP_GENERATOR -DDEBUG)
 
 # zlib
 ADD_DEFINITIONS( -DNO_vsnprintf )
@@ -25,45 +23,18 @@ if(!WIN32)
 endif()
 
 include_directories(
-    ${CMAKE_SOURCE_DIR}/src
-    ${CMAKE_SOURCE_DIR}/src/shared
-    ${CMAKE_SOURCE_DIR}/src/game
-    ${CMAKE_SOURCE_DIR}/src/framework
-    ${CMAKE_SOURCE_DIR}/src/game/Commands
-    ${CMAKE_SOURCE_DIR}/src/game/vmap
-    ${CMAKE_SOURCE_DIR}/src/game/Maps
-    ${CMAKE_SOURCE_DIR}/dep/include/g3dlite
-    ${CMAKE_SOURCE_DIR}/src/framework
-    ${CMAKE_SOURCE_DIR}/dep/ACE_wrappers
-    ${CMAKE_SOURCE_DIR}/objdir/dep/ACE_wrappers
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Detour/Include
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Include
-)
-
-add_library(vmap
-	${CMAKE_SOURCE_DIR}/src/game/vmap/BIH.cpp
-	${CMAKE_SOURCE_DIR}/src/game/vmap/VMapManager2.cpp
-	${CMAKE_SOURCE_DIR}/src/game/vmap/MapTree.cpp
-	${CMAKE_SOURCE_DIR}/src/game/vmap/TileAssembler.cpp
-	${CMAKE_SOURCE_DIR}/src/game/vmap/WorldModel.cpp
-	${CMAKE_SOURCE_DIR}/src/game/vmap/ModelInstance.cpp
-)
-
-target_link_libraries(vmap g3dlite z)
-if(UNIX)
-  target_link_libraries(vmap pthread)
-endif()
-
-add_library(Recast
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Source/Recast.cpp
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Source/RecastAlloc.cpp
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Source/RecastArea.cpp
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Source/RecastContour.cpp
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Source/RecastFilter.cpp
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Source/RecastMesh.cpp
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Source/RecastMeshDetail.cpp
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Source/RecastRasterization.cpp
-    ${CMAKE_SOURCE_DIR}/dep/recastnavigation/Recast/Source/RecastRegion.cpp
+    ../../src
+    ../../src/shared
+    ../../src/game
+    ../../src/game/vmap
+    ../../src/game/Commands
+    ../../dep/include/g3dlite
+    ../../src/framework
+    ${ACE_INCLUDE_DIR}
+    ../../dep/recastnavigation/
+    ../../dep/recastnavigation/Detour/Include
+    ../../dep/recastnavigation/Recast/Include
+    ../../dep/src/zlib
 )
 
 set(SOURCES
@@ -74,6 +45,16 @@ set(SOURCES
     ./src/VMapExtensions.cpp
 )
 
-add_executable( MoveMapGen ${SOURCES} )
+add_executable(MoveMapGen ${SOURCES})
+SET_TARGET_PROPERTIES (MoveMapGen PROPERTIES FOLDER Extractors)
 
-target_link_libraries( MoveMapGen g3dlite vmap detour Recast z )
+target_link_libraries(MoveMapGen 
+                        vmap 
+                        detour
+                        Recast
+                        ${ACE_LIBRARIES}
+                        shared
+                        framework
+                        )
+
+install(TARGETS MoveMapGen DESTINATION ${BIN_DIR})
