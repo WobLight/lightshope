@@ -1535,6 +1535,9 @@ void World::SetInitialWorldSettings()
     sLog.outString("Loading GameTeleports...");
     sObjectMgr.LoadGameTele();
 
+    sLog.outString("Loading Taxi path transitions...");
+    sObjectMgr.LoadTaxiPathTransitions();
+
     if (!isMapServer)
     {
         sLog.outString("Loading GM tickets and surveys...");
