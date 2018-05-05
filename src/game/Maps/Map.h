@@ -69,6 +69,7 @@ class ChatHandler;
 struct ScriptInfo;
 class BattleGround;
 class GridMap;
+class WeatherSystem;
 class Transport;
 
 namespace VMAP
@@ -324,7 +325,10 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>
         uint32 GetPlayersCountExceptGMs() const;
         bool ActiveObjectsNearGrid(uint32 x,uint32 y) const;
 
+        // Send a Packet to all players on a map
         void SendToPlayers(WorldPacket const* data) const;
+        // Send a Packet to all players in a zone. Return false if no player found
+        bool SendToPlayersInZone(WorldPacket const* data, uint32 zoneId) const;
 
         typedef MapRefManager PlayerList;
         PlayerList const& GetPlayers() const { return m_mapRefManager; }
@@ -423,6 +427,18 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>
         uint32 GetUpdateDiffMod() const { return m_updateDiffMod; }
         void BindToInstanceOrRaid(Player* player, time_t objectResetTime, bool permBindToRaid);
         void TeleportAllPlayersToHomeBind();
+
+        // WeatherSystem
+        WeatherSystem* GetWeatherSystem() const { return m_weatherSystem; }
+        /** Set the weather in a zone on this map
+         * @param zoneId set the weather for which zone
+         * @param type What weather to set
+         * @param grade how strong the weather should be
+         * @param permanently set the weather permanently?
+         */
+        void SetWeather(uint32 zoneId, WeatherType type, float grade, bool permanently);
+
+        void SetMapUpdateIndex(int idx) { _updateIdx = idx; }
 
         // Get Holder for Creature Linking
         CreatureLinkingHolder* GetCreatureLinkingHolder() { return &m_creatureLinkingHolder; }
@@ -578,6 +594,9 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>
 
         // Holder for information about linked mobs
         CreatureLinkingHolder m_creatureLinkingHolder;
+
+        // WeatherSystem
+        WeatherSystem* m_weatherSystem;
 
         // Functions to handle all db script commands.
         bool ScriptCommand_Talk(const ScriptInfo& script, WorldObject* source, WorldObject* target);
