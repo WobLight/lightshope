@@ -659,6 +659,7 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>
         bool ScriptCommand_AddSpellCooldown(const ScriptInfo& script, WorldObject* source, WorldObject* target);
         bool ScriptCommand_RemoveSpellCooldown(const ScriptInfo& script, WorldObject* source, WorldObject* target);
         bool ScriptCommand_SetReactState(const ScriptInfo& script, WorldObject* source, WorldObject* target);
+        bool ScriptCommand_StartWaypoints(const ScriptInfo& script, WorldObject* source, WorldObject* target);
 
         // Add any new script command functions to the array.
         const ScriptCommandFunction m_ScriptCommands[SCRIPT_COMMAND_MAX] =
@@ -723,6 +724,7 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>
             &Map::ScriptCommand_AddSpellCooldown,       // 57
             &Map::ScriptCommand_RemoveSpellCooldown,    // 58
             &Map::ScriptCommand_SetReactState,          // 59
+            &Map::ScriptCommand_StartWaypoints,         // 60
         };
 
     public:
