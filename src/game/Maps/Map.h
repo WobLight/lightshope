@@ -196,6 +196,78 @@ class ThreadPool;
 
 typedef bool(Map::*ScriptCommandFunction) (const ScriptInfo& script, WorldObject* source, WorldObject* target);
 
+struct ScriptedEventTarget
+{
+    ScriptedEventTarget(WorldObject* object, uint32 failureCondition, uint32 failureScript, uint32 successCondition, uint32 successScript) :
+        pObject(object), uiFailureCondition(failureCondition), uiFailureScript(failureScript), uiSuccessCondition(successCondition), uiSuccessScript(successScript) {}
+
+    WorldObject* pObject;
+    uint32 uiFailureCondition;
+    uint32 uiFailureScript;
+    uint32 uiSuccessCondition;
+    uint32 uiSuccessScript;
+};
+
+struct ScriptedEvent
+{
+    ScriptedEvent(uint32 eventId, WorldObject* source, WorldObject* target, Map* map, time_t expireTime, uint32 failureCondition, uint32 failureScript, uint32 successCondition, uint32 successScript) :
+        m_uiEventId(eventId), m_pSource(source), m_pTarget(target), m_pMap(map), m_tExpireTime(expireTime), m_uiFailureCondition(failureCondition), m_uiFailureScript(failureScript), m_uiSuccessCondition(successCondition), m_uiSuccessScript(successScript) {}
+    
+    WorldObject* m_pSource;
+    WorldObject* m_pTarget;
+    Map* const m_pMap;
+
+    const uint32 m_uiEventId;
+    time_t m_tExpireTime;
+
+    uint32 m_uiFailureCondition;
+    uint32 m_uiFailureScript;
+    uint32 m_uiSuccessCondition;
+    uint32 m_uiSuccessScript;
+
+    std::map<uint32, uint32> m_mData;
+    std::vector<ScriptedEventTarget> m_vTargets;
+
+    // Returns true when event has expired.
+    bool UpdateEvent();
+
+    void EndEvent(bool bSuccess);
+
+    void SendEventToMainTargets(uint32 uiData);
+
+    void SendEventToAdditionalTargets(uint32 uiData);
+
+    void SendEventToAllTargets(uint32 uiData);
+
+    uint32 GetData(uint32 uiIndex) const
+    {
+        auto itr = m_mData.find(uiIndex);
+        if (itr != m_mData.end())
+            return itr->second;
+        return 0;
+    }
+
+    void SetData(uint32 uiIndex, uint32 uiValue)
+    {
+        m_mData[uiIndex] = uiValue;
+    }
+
+    void IncrementData(uint32 uiIndex, uint32 uiValue)
+    {
+        m_mData[uiIndex] += uiValue;
+    }
+
+    void DecrementData(uint32 uiIndex, uint32 uiValue)
+    {
+        if (m_mData[uiIndex] < uiValue)
+            m_mData[uiIndex] = 0;
+        else
+            m_mData[uiIndex] -= uiValue;
+    }
+
+    ScriptedEvent(const ScriptedEvent&) = delete;
+};
+
 class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>
 {
     friend class MapReference;
@@ -332,6 +404,24 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>
 
         typedef MapRefManager PlayerList;
         PlayerList const& GetPlayers() const { return m_mapRefManager; }
+
+        ScriptedEvent* GetScriptedMapEvent(uint32 id)
+        {
+            auto itr = m_mScriptedEvents.find(id);
+            if (itr != m_mScriptedEvents.end())
+                return &itr->second;
+            return nullptr;
+        }
+
+        const ScriptedEvent* GetScriptedMapEvent(uint32 id) const
+        {
+            auto itr = m_mScriptedEvents.find(id);
+            if (itr != m_mScriptedEvents.end())
+                return &itr->second;
+            return nullptr;
+        }
+
+        ScriptedEvent* StartScriptedEvent(uint32 id, WorldObject* source, WorldObject* target, uint32 timelimit, uint32 failureCondition, uint32 failureScript, uint32 successCondition, uint32 successScript);
 
         // Adds all commands that are part of the provided script id to the queue.
         void ScriptsStart(std::map<uint32, std::multimap<uint32, ScriptInfo> > const& scripts, uint32 id, WorldObject* source, WorldObject* target);
@@ -598,6 +688,11 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>
         // WeatherSystem
         WeatherSystem* m_weatherSystem;
 
+        // Scripted Map Events
+        std::map<uint32, ScriptedEvent> m_mScriptedEvents;
+        void UpdateScriptedEvents();
+        uint32 m_uiScriptedEventsTimer;
+
         // Functions to handle all db script commands.
         bool ScriptCommand_Talk(const ScriptInfo& script, WorldObject* source, WorldObject* target);
         bool ScriptCommand_Emote(const ScriptInfo& script, WorldObject* source, WorldObject* target);
@@ -660,6 +755,12 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>
         bool ScriptCommand_RemoveSpellCooldown(const ScriptInfo& script, WorldObject* source, WorldObject* target);
         bool ScriptCommand_SetReactState(const ScriptInfo& script, WorldObject* source, WorldObject* target);
         bool ScriptCommand_StartWaypoints(const ScriptInfo& script, WorldObject* source, WorldObject* target);
+        bool ScriptCommand_StartMapEvent(const ScriptInfo& script, WorldObject* source, WorldObject* target);
+        bool ScriptCommand_EndMapEvent(const ScriptInfo& script, WorldObject* source, WorldObject* target);
+        bool ScriptCommand_AddMapEventTarget(const ScriptInfo& script, WorldObject* source, WorldObject* target);
+        bool ScriptCommand_RemoveMapEventTarget(const ScriptInfo& script, WorldObject* source, WorldObject* target);
+        bool ScriptCommand_SetMapEventData(const ScriptInfo& script, WorldObject* source, WorldObject* target);
+        bool ScriptCommand_SendMapEvent(const ScriptInfo& script, WorldObject* source, WorldObject* target);
 
         // Add any new script command functions to the array.
         const ScriptCommandFunction m_ScriptCommands[SCRIPT_COMMAND_MAX] =
@@ -725,6 +826,12 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>
             &Map::ScriptCommand_RemoveSpellCooldown,    // 58
             &Map::ScriptCommand_SetReactState,          // 59
             &Map::ScriptCommand_StartWaypoints,         // 60
+            &Map::ScriptCommand_StartMapEvent,          // 61
+            &Map::ScriptCommand_EndMapEvent,            // 62
+            &Map::ScriptCommand_AddMapEventTarget,      // 63
+            &Map::ScriptCommand_RemoveMapEventTarget,   // 64
+            &Map::ScriptCommand_SetMapEventData,        // 65
+            &Map::ScriptCommand_SendMapEvent,           // 66
         };
 
     public:

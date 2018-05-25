@@ -1492,6 +1492,7 @@ void World::SetInitialWorldSettings()
     sScriptMgr.LoadGameObjectScripts();                     // must be after load Creature/Gameobject(Template/Data)
     sScriptMgr.LoadEventScripts();                          // must be after load Creature/Gameobject(Template/Data)
     sScriptMgr.LoadCreatureEventAIScripts();
+    sScriptMgr.LoadMapEventScripts();
     sLog.outString(">>> Scripts loaded");
     sLog.outString();
 
