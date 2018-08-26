@@ -25,7 +25,7 @@
 #include "GridDefines.h"
 #include "Object.h"
 #include "SharedDefines.h"
-
+#include <memory>
 #include <bitset>
 #include <list>
 #include <atomic>
@@ -37,6 +37,7 @@ class InstanceData;
 class Group;
 class BattleGround;
 class Map;
+struct LiquidTypeEntry;
 
 struct GridMapFileHeader
 {
@@ -290,6 +291,10 @@ class MANGOS_DLL_DECL TerrainManager : public MaNGOS::Singleton<TerrainManager, 
         void Update(const uint32 diff);
         void UnloadAll();
 
+        // Liquid Types
+        LiquidTypeEntry const* GetLiquidType(uint32 id) const { return id < GetMaxLiquidType() ? mLiquidTypes[id].get() : nullptr; }
+        uint32 GetMaxLiquidType() const { return mLiquidTypes.size(); }
+
         uint16 GetAreaFlag(uint32 mapid, float x, float y, float z) const
         {
             TerrainInfo* pData = const_cast<TerrainManager*>(this)->LoadTerrain(mapid);
@@ -321,6 +326,9 @@ class MANGOS_DLL_DECL TerrainManager : public MaNGOS::Singleton<TerrainManager, 
 
         typedef MaNGOS::ClassLevelLockable<TerrainManager, std::mutex>::Lock Guard;
         TerrainDataMap i_TerrainMap;
+
+        typedef std::vector<std::unique_ptr<LiquidTypeEntry>> LiquidTypeStore;
+        LiquidTypeStore mLiquidTypes;
 };
 
 #define sTerrainMgr TerrainManager::Instance()
