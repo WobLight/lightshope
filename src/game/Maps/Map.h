@@ -536,6 +536,8 @@ class MANGOS_DLL_SPEC Map : public GridRefManager<NGridType>
         void AddCorpseToRemove(Corpse* corpse, ObjectGuid looter_guid);
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, uint32 worldMask);
 
+        bool ShouldUpdateInactiveMap(uint32 now, uint32 inactiveTimeLimit);
+
     private:
         void LoadMapAndVMap(int gx, int gy);
 
