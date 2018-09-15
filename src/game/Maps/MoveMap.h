@@ -20,7 +20,7 @@
 #define _MOVE_MAP_H
 
 
-#include "Utilities/UnorderedMapSet.h"
+#include <unordered_map>
 
 #include "Detour/Include/DetourAlloc.h"
 #include "Detour/Include/DetourNavMesh.h"
@@ -43,8 +43,8 @@ inline void dtCustomFree(void* ptr)
 //  move map related classes
 namespace MMAP
 {
-    typedef UNORDERED_MAP<uint32, dtTileRef> MMapTileSet;
-    typedef UNORDERED_MAP<std::thread::id, dtNavMeshQuery*> NavMeshQuerySet;
+    typedef std::unordered_map<uint32, dtTileRef> MMapTileSet;
+    typedef std::unordered_map<std::thread::id, dtNavMeshQuery*> NavMeshQuerySet;
 
     // dummy struct to hold map's mmap data
     struct MMapData
@@ -68,7 +68,7 @@ namespace MMAP
         std::mutex tilesLoading_lock;
     };
 
-    typedef UNORDERED_MAP<uint32, MMapData*> MMapDataSet;
+    typedef std::unordered_map<uint32, MMapData*> MMapDataSet;
 
     // singelton class
     // holds all all access to mmap loading unloading and meshes

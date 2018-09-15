@@ -50,7 +50,7 @@ class HashMapHolder
 {
     public:
 
-        typedef UNORDERED_MAP<ObjectGuid, T*>   MapType;
+        typedef std::unordered_map<ObjectGuid, T*>   MapType;
         typedef ACE_RW_Thread_Mutex LockType;
         typedef ACE_Read_Guard<LockType> ReadGuard;
         typedef ACE_Write_Guard<LockType> WriteGuard;
@@ -97,7 +97,7 @@ class MANGOS_DLL_DECL ObjectAccessor : public MaNGOS::Singleton<ObjectAccessor, 
     ObjectAccessor& operator=(const ObjectAccessor &);
 
     public:
-        typedef UNORDERED_MAP<ObjectGuid, Corpse*> Player2CorpsesMapType;
+        typedef std::unordered_map<ObjectGuid, Corpse*> Player2CorpsesMapType;
 
         // Search player at any map in world and other objects at same map with `obj`
         // Note: recommended use Map::GetUnit version if player also expected at same map only
