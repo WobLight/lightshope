@@ -20,6 +20,8 @@
 #define _MOVE_MAP_H
 
 
+#include "Platform/CompilerDefs.h"
+#include "Platform/Define.h"
 #include <unordered_map>
 
 #include "Detour/Include/DetourAlloc.h"
