@@ -3421,7 +3421,7 @@ bool Map::ShouldUpdateInactiveMap(uint32 now, uint32 inactiveTimeLimit)
     // in AddCorpseToRemove because it can be called concurrently.
     if (!update)
     {
-        ACE_Guard<MapMutexType> guard(_corpseRemovalLock);
+        std::unique_lock<MapMutexType> guard(_corpseRemovalLock);
         if (_corpseToRemove.size() > 0)
             update = true;
     }
@@ -3435,7 +3435,7 @@ bool Map::ShouldUpdateInactiveMap(uint32 now, uint32 inactiveTimeLimit)
  */
 void Map::AddCorpseToRemove(Corpse* corpse, ObjectGuid looter_guid)
 {
-    ACE_Guard<MapMutexType> guard(_corpseRemovalLock);
+    std::unique_lock<MapMutexType> guard(_corpseRemovalLock);
     _corpseToRemove.emplace_back(corpse, looter_guid);
 }
 
@@ -3444,7 +3444,7 @@ void Map::AddCorpseToRemove(Corpse* corpse, ObjectGuid looter_guid)
  */
 void Map::RemoveCorpses(bool unload)
 {
-    ACE_Guard<MapMutexType> guard(_corpseRemovalLock);
+    std::unique_lock<MapMutexType> guard(_corpseRemovalLock);
     for (auto iter = _corpseToRemove.begin(); iter != _corpseToRemove.end();)
     {
         auto corpse = iter->first;
@@ -3507,7 +3507,7 @@ void Map::RemoveCorpses(bool unload)
 
             // Only take the lock for a second
             {
-                ACE_Guard<MapMutexType> guard(_bonesLock);
+                std::unique_lock<MapMutexType> guard(_bonesLock);
                 _bones.push_back(bones);
             }
         }
@@ -3538,7 +3538,7 @@ void Map::RemoveOldBones(const uint32 diff)
     _bonesCleanupTimer = 0u;
 
     time_t now = time(nullptr);
-    ACE_Guard<MapMutexType> guard(_bonesLock);
+    std::unique_lock<MapMutexType> guard(_bonesLock);
     for (auto iter = _bones.begin(); iter != _bones.end();)
     {
         Corpse* bones = *iter;

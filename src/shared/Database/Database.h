@@ -22,7 +22,6 @@
 #ifndef DATABASE_H
 #define DATABASE_H
 
-#include "Utilities/UnorderedMapSet.h"
 #include <unordered_map>
 #include "Database/SqlDelayThread.h"
 #include "Policies/ThreadingModel.h"
